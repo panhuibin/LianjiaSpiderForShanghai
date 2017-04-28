@@ -35,8 +35,8 @@ hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
     {'User-Agent':'Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11'}]
     
 
-#北京区域列表
-regions=[u"东城",u"西城",u"朝阳",u"海淀",u"丰台",u"石景山","通州",u"昌平",u"大兴",u"亦庄开发区",u"顺义",u"房山",u"门头沟",u"平谷",u"怀柔",u"密云",u"延庆",u"燕郊"]
+#上海区域列表
+regions=[u"普陀"]
 
 
 lock = threading.Lock()
@@ -136,7 +136,7 @@ def gen_chengjiao_insert_command(info_dict):
     return command
 
 
-def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E5%B9%B3/"):
+def xiaoqu_spider(db_xq,url_page=u"http://sh.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E5%B9%B3/"):
     """
     爬取页面链接中的小区信息
     """
@@ -144,7 +144,7 @@ def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E
         req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        soup = BeautifulSoup(plain_text,"html.parser")
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         exit(-1)
@@ -168,29 +168,31 @@ def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E
         db_xq.execute(command,1)
 
     
-def do_xiaoqu_spider(db_xq,region=u"昌平"):
+def do_xiaoqu_spider(db_xq,region=u"普陀"):
     """
     爬取大区域中的所有小区信息
     """
-    url=u"http://bj.lianjia.com/xiaoqu/rs"+region+"/"
+    url=u"http://sh.lianjia.com/xiaoqu/rs"+region+"/"
+    print "do xiaoqu spider:"+url
     try:
         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=5).read()
         plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        soup = BeautifulSoup(plain_text,"html.parser")
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         return
     except Exception,e:
         print e
         return
-    d="d="+soup.find('div',{'class':'page-box house-lst-page-box'}).get('page-data')
-    exec(d)
-    total_pages=d['totalPage']
+    print "soup="+str(soup)
+    d=soup.find('a',{'gahref':'results_totalpage'})
+    print "total_pages = "+str(d)
     
     threads=[]
-    for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
+    for i in range(1):
+    #for i in range(total_pages):
+        url_page=u"http://sh.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
         t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
         threads.append(t)
     for t in threads:
@@ -208,7 +210,7 @@ def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%8
         req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        soup = BeautifulSoup(plain_text,"html.parser")
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         exception_write('chengjiao_spider',url_page)
@@ -257,7 +259,7 @@ def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%8
         db_cj.execute(command,1)
 
 
-def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
+def xiaoqu_chengjiao_spider(db_cj,xq_name=u"逸流公寓"):
     """
     爬取小区成交记录
     """
@@ -266,7 +268,7 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        soup = BeautifulSoup(plain_text,"html.parser")
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         exception_write('xiaoqu_chengjiao_spider',xq_name)
@@ -284,7 +286,7 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
     
     threads=[]
     for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
+        url_page=u"http://sh.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
         threads.append(t)
     for t in threads:
