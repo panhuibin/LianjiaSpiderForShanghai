@@ -37,7 +37,7 @@ hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
     
 
 #上海区域列表
-regions=[u"普陀"]
+regions=[u"徐汇"]
 
 
 lock = threading.Lock()
@@ -248,7 +248,7 @@ def chengjiao_spider(db_cj,url_page=u"http://sh.lianjia.com/chengjiao/d1rs%E5%86
         if(len(content)>1):
             direction=content[1].rstrip()   
             info_dict.update({u'朝向':direction})
-        else
+        else:
             direction=""
         print "朝向=%s,楼层=%s" %(direction,floor)
         sign_up_time=cj.find('div',{'class':'info-col deal-item main strong-num'}).text
